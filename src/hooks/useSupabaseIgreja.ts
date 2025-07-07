@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useN8nWebhook } from './useN8nWebhook';
 
 export interface IgrejaData {
   id: string;
@@ -34,6 +35,7 @@ export const useSupabaseIgreja = () => {
   const [igrejas, setIgrejas] = useState<IgrejaData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { sendChurchData } = useN8nWebhook();
 
   const fetchIgrejas = async () => {
     try {
@@ -81,6 +83,15 @@ export const useSupabaseIgreja = () => {
 
       setIgrejas(prev => [...prev, data]);
       
+      // Enviar dados para webhook
+      try {
+        await sendChurchData('create', data);
+        console.log('Dados da nova igreja enviados para webhook');
+      } catch (webhookError) {
+        console.error('Erro ao enviar dados para webhook:', webhookError);
+        // Não falhar a operação principal por erro no webhook
+      }
+      
       toast({
         title: "Sucesso",
         description: "Igreja cadastrada com sucesso."
@@ -111,6 +122,15 @@ export const useSupabaseIgreja = () => {
 
       setIgrejas(prev => prev.map(igreja => igreja.id === id ? data : igreja));
       
+      // Enviar dados para webhook
+      try {
+        await sendChurchData('update', data);
+        console.log('Dados da igreja atualizada enviados para webhook');
+      } catch (webhookError) {
+        console.error('Erro ao enviar dados para webhook:', webhookError);
+        // Não falhar a operação principal por erro no webhook
+      }
+      
       toast({
         title: "Sucesso",
         description: "Igreja atualizada com sucesso."
@@ -130,6 +150,9 @@ export const useSupabaseIgreja = () => {
 
   const deleteIgreja = async (id: string) => {
     try {
+      // Obter dados da igreja antes de remover
+      const deletedIgreja = igrejas.find(igreja => igreja.id === id);
+      
       const { error } = await supabase
         .from('igreja')
         .delete()
@@ -138,6 +161,17 @@ export const useSupabaseIgreja = () => {
       if (error) throw error;
 
       setIgrejas(prev => prev.filter(igreja => igreja.id !== id));
+      
+      // Enviar dados para webhook
+      if (deletedIgreja) {
+        try {
+          await sendChurchData('delete', { id, ...deletedIgreja });
+          console.log('Dados da igreja excluída enviados para webhook');
+        } catch (webhookError) {
+          console.error('Erro ao enviar dados para webhook:', webhookError);
+          // Não falhar a operação principal por erro no webhook
+        }
+      }
       
       toast({
         title: "Sucesso",

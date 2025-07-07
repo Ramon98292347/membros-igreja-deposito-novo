@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { InventoryItem, Movement, Transfer } from '@/types/inventory';
 import { useChurchContext } from './ChurchContext';
+import { useN8nWebhook } from '@/hooks/useN8nWebhook';
 
 interface InventoryContextType {
   items: InventoryItem[];
@@ -8,9 +9,9 @@ interface InventoryContextType {
   transfers: Transfer[];
   
   // Items
-  addItem: (item: Omit<InventoryItem, 'id' | 'dataCadastro' | 'dataAtualizacao'>) => void;
-  updateItem: (id: string, item: Partial<InventoryItem>) => void;
-  deleteItem: (id: string) => void;
+  addItem: (item: Omit<InventoryItem, 'id' | 'dataCadastro' | 'dataAtualizacao'>) => Promise<void>;
+  updateItem: (id: string, item: Partial<InventoryItem>) => Promise<void>;
+  deleteItem: (id: string) => Promise<void>;
   getItemById: (id: string) => InventoryItem | undefined;
   searchItems: (query: string) => InventoryItem[];
   updateItemStock: (itemId: string, quantityChange: number) => void;
@@ -44,6 +45,7 @@ interface InventoryProviderProps {
 
 export const InventoryProvider = ({ children }: InventoryProviderProps) => {
   const { churches } = useChurchContext();
+  const { sendInventoryData } = useN8nWebhook();
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [movements, setMovements] = useState<Movement[]>([]);
   const [transfers, setTransfers] = useState<Transfer[]>([]);
@@ -78,7 +80,7 @@ export const InventoryProvider = ({ children }: InventoryProviderProps) => {
     localStorage.setItem('inventory-transfers', JSON.stringify(transfers));
   }, [transfers]);
 
-  const addItem = (itemData: Omit<InventoryItem, 'id' | 'dataCadastro' | 'dataAtualizacao'>) => {
+  const addItem = async (itemData: Omit<InventoryItem, 'id' | 'dataCadastro' | 'dataAtualizacao'>) => {
     const newItem: InventoryItem = {
       ...itemData,
       id: crypto.randomUUID(),
@@ -86,20 +88,54 @@ export const InventoryProvider = ({ children }: InventoryProviderProps) => {
       dataAtualizacao: new Date().toISOString()
     };
     setItems(prev => [...prev, newItem]);
+    
+    // Enviar dados para webhook
+    try {
+      await sendInventoryData('create', newItem);
+      console.log('Dados do novo item de inventário enviados para webhook');
+    } catch (webhookError) {
+      console.error('Erro ao enviar dados para webhook:', webhookError);
+      // Não falhar a operação principal por erro no webhook
+    }
   };
 
-  const updateItem = (id: string, itemData: Partial<InventoryItem>) => {
+  const updateItem = async (id: string, itemData: Partial<InventoryItem>) => {
+    const updatedItem = { ...items.find(item => item.id === id), ...itemData, dataAtualizacao: new Date().toISOString() };
+    
     setItems(prev =>
       prev.map(item =>
         item.id === id
-          ? { ...item, ...itemData, dataAtualizacao: new Date().toISOString() }
+          ? updatedItem
           : item
       )
     );
+    
+    // Enviar dados para webhook
+    try {
+      await sendInventoryData('update', updatedItem);
+      console.log('Dados do item de inventário atualizado enviados para webhook');
+    } catch (webhookError) {
+      console.error('Erro ao enviar dados para webhook:', webhookError);
+      // Não falhar a operação principal por erro no webhook
+    }
   };
 
-  const deleteItem = (id: string) => {
+  const deleteItem = async (id: string) => {
+    // Obter dados do item antes de remover
+    const deletedItem = items.find(item => item.id === id);
+    
     setItems(prev => prev.filter(item => item.id !== id));
+    
+    // Enviar dados para webhook
+    if (deletedItem) {
+      try {
+        await sendInventoryData('delete', { id, ...deletedItem });
+        console.log('Dados do item de inventário excluído enviados para webhook');
+      } catch (webhookError) {
+        console.error('Erro ao enviar dados para webhook:', webhookError);
+        // Não falhar a operação principal por erro no webhook
+      }
+    }
   };
 
   const getItemById = (id: string) => {

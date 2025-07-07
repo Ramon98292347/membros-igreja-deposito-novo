@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Member } from '@/types/member';
+import { useN8nWebhook } from './useN8nWebhook';
 
 export interface SupabaseMember {
   id: string;
@@ -35,8 +36,9 @@ export interface SupabaseMember {
 
 export const useSupabaseMembers = () => {
   const [members, setMembers] = useState<Member[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { sendMemberData } = useN8nWebhook();
 
   const convertSupabaseMemberToMember = (supabaseMember: SupabaseMember): Member => {
     return {
@@ -142,6 +144,15 @@ export const useSupabaseMembers = () => {
       const newMember = convertSupabaseMemberToMember(data);
       setMembers(prev => [...prev, newMember]);
       
+      // Enviar dados para webhook
+      try {
+        await sendMemberData('create', newMember);
+        console.log('Dados do novo membro enviados para webhook');
+      } catch (webhookError) {
+        console.error('Erro ao enviar dados para webhook:', webhookError);
+        // Não falhar a operação principal por erro no webhook
+      }
+      
       return newMember;
     } catch (error) {
       console.error('Erro ao adicionar membro:', error);
@@ -220,6 +231,15 @@ export const useSupabaseMembers = () => {
       const updatedMember = convertSupabaseMemberToMember(data);
       setMembers(prev => prev.map(member => member.id === id ? updatedMember : member));
       
+      // Enviar dados para webhook
+      try {
+        await sendMemberData('update', updatedMember);
+        console.log('Dados do membro atualizado enviados para webhook');
+      } catch (webhookError) {
+        console.error('Erro ao enviar dados para webhook:', webhookError);
+        // Não falhar a operação principal por erro no webhook
+      }
+      
       return updatedMember;
     } catch (error) {
       console.error('Erro ao atualizar membro:', error);
@@ -271,7 +291,21 @@ export const useSupabaseMembers = () => {
         console.log('Membro marcado como inativo com sucesso:', data);
       }
 
+      // Obter dados do membro antes de remover da lista local
+      const deletedMember = members.find(member => member.id === id);
+      
       setMembers(prev => prev.filter(member => member.id !== id));
+      
+      // Enviar dados para webhook
+      if (deletedMember) {
+        try {
+          await sendMemberData('delete', { id, ...deletedMember });
+          console.log('Dados do membro excluído enviados para webhook');
+        } catch (webhookError) {
+          console.error('Erro ao enviar dados para webhook:', webhookError);
+          // Não falhar a operação principal por erro no webhook
+        }
+      }
     } catch (error) {
       console.error('Erro ao deletar membro:', error);
       throw error;
