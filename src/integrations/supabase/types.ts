@@ -389,7 +389,6 @@ export type Database = {
           data_atualizacao: string | null
           data_batismo: string | null
           data_nascimento: string
-          data_ordenacao: string | null
           email: string | null
           endereco: string | null
           estado: string | null
@@ -421,7 +420,6 @@ export type Database = {
           data_atualizacao?: string | null
           data_batismo?: string | null
           data_nascimento: string
-          data_ordenacao?: string | null
           email?: string | null
           endereco?: string | null
           estado?: string | null
@@ -453,7 +451,6 @@ export type Database = {
           data_atualizacao?: string | null
           data_batismo?: string | null
           data_nascimento?: string
-          data_ordenacao?: string | null
           email?: string | null
           endereco?: string | null
           estado?: string | null

@@ -24,7 +24,6 @@ export interface SupabaseMember {
   telefone?: string;
   profissao?: string;
   data_batismo?: string;
-  data_ordenacao?: string;
   funcao_ministerial?: string;
   link_ficha?: string;
   dados_carteirinha?: string;
@@ -63,7 +62,6 @@ export const useSupabaseMembers = () => {
       profissao: supabaseMember.profissao || '',
       temFilho: false, // Campo não existe na tabela, mantemos false como padrão
       dataBatismo: supabaseMember.data_batismo || '',
-      dataOrdenacao: supabaseMember.data_ordenacao || '',
       funcaoMinisterial: (supabaseMember.funcao_ministerial as any) || 'Membro',
       linkFicha: supabaseMember.link_ficha,
       dadosCarteirinha: supabaseMember.dados_carteirinha,
@@ -126,8 +124,7 @@ export const useSupabaseMembers = () => {
         telefone: memberData.telefone,
         profissao: memberData.profissao,
         data_batismo: memberData.dataBatismo,
-        data_ordenacao: memberData.dataOrdenacao,
-        funcao_ministerial: memberData.funcaoMinisterial,
+      funcao_ministerial: memberData.funcaoMinisterial,
         link_ficha: memberData.linkFicha,
         dados_carteirinha: memberData.dadosCarteirinha,
         ativo: true
@@ -185,8 +182,7 @@ export const useSupabaseMembers = () => {
       if (memberData.telefone !== undefined) supabaseData.telefone = memberData.telefone;
       if (memberData.profissao !== undefined) supabaseData.profissao = memberData.profissao;
       if (memberData.dataBatismo !== undefined) supabaseData.data_batismo = memberData.dataBatismo;
-      if (memberData.dataOrdenacao !== undefined) supabaseData.data_ordenacao = memberData.dataOrdenacao;
-      if (memberData.funcaoMinisterial !== undefined) supabaseData.funcao_ministerial = memberData.funcaoMinisterial;
+    if (memberData.funcaoMinisterial !== undefined) supabaseData.funcao_ministerial = memberData.funcaoMinisterial;
       if (memberData.linkFicha !== undefined) supabaseData.link_ficha = memberData.linkFicha;
       if (memberData.dadosCarteirinha !== undefined) supabaseData.dados_carteirinha = memberData.dadosCarteirinha;
 
