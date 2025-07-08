@@ -43,13 +43,22 @@ const IgrejaForm = () => {
   const isEditing = !!id;
 
   useEffect(() => {
-    if (isEditing && igrejas.length > 0) {
+    if (isEditing && id && igrejas.length > 0) {
       const igreja = igrejas.find(i => i.id === id);
       if (igreja) {
+        console.log('Carregando dados da igreja para edição:', igreja);
         setFormData(igreja);
+      } else {
+        console.log('Igreja não encontrada com ID:', id);
+        toast({
+          title: "Aviso",
+          description: "Igreja não encontrada. Redirecionando...",
+          variant: "destructive"
+        });
+        navigate('/igrejas-sistema');
       }
     }
-  }, [id, isEditing, igrejas]);
+  }, [id, isEditing, igrejas, navigate]);
 
   const handleInputChange = (field: keyof IgrejaData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));

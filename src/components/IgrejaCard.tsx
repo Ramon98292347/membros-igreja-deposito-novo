@@ -129,7 +129,7 @@ const IgrejaCard = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate(`/igrejas/editar/${igreja.id}`)}
+                  onClick={() => navigate(`/igrejas/editar-igreja/${igreja.id}`)}
                   className="flex-1"
                 >
                   Editar
@@ -216,7 +216,7 @@ const IgrejaCard = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => navigate(`/igrejas/editar/${igreja.id}`)}
+                      onClick={() => navigate(`/igrejas/editar-igreja/${igreja.id}`)}
                     >
                       Editar
                     </Button>
