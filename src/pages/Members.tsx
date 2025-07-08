@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
 import { useMemberContext } from '@/context/MemberContext';
 import { useLazyLoading } from '@/hooks/useLazyLoading';
-import { Plus, Search, Users, FileText, CreditCard, MessageSquare, TrendingUp, UserCheck, Calendar, Grid, List, LayoutGrid, ExternalLink } from 'lucide-react';
+import { Plus, Search, Users, FileText, CreditCard, MessageSquare, TrendingUp, UserCheck, Calendar, Grid, List, LayoutGrid, ExternalLink, Filter } from 'lucide-react';
 import MemberCard from '@/components/MemberCard';
 import InfiniteScroll from '@/components/InfiniteScroll';
 
@@ -17,8 +18,26 @@ const Members = () => {
   const { members, searchMembers, deleteMember } = useMemberContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'carousel' | 'grid'>('list');
+  const [funcaoFilter, setFuncaoFilter] = useState('todas');
+  const [batismoFilter, setBatismoFilter] = useState('todos');
 
-  const filteredMembers = searchQuery ? searchMembers(searchQuery) : members;
+  // Filtrar membros por função e batismo
+  const filterByFunction = (members: any[]) => {
+    if (funcaoFilter === 'todas') return members;
+    return members.filter(member => member.funcaoMinisterial === funcaoFilter);
+  };
+
+  const filterByBaptism = (members: any[]) => {
+    if (batismoFilter === 'todos') return members;
+    if (batismoFilter === 'batizados') return members.filter(member => member.dataBatismo);
+    if (batismoFilter === 'nao-batizados') return members.filter(member => !member.dataBatismo);
+    return members;
+  };
+
+  // Aplicar todos os filtros
+  let filteredMembers = searchQuery ? searchMembers(searchQuery) : members;
+  filteredMembers = filterByFunction(filteredMembers);
+  filteredMembers = filterByBaptism(filteredMembers);
   
   // Implementar lazy loading para os membros
   const {
@@ -55,6 +74,18 @@ const Members = () => {
       acc[member.funcaoMinisterial] = (acc[member.funcaoMinisterial] || 0) + 1;
       return acc;
     }, {} as Record<string, number>)
+  };
+
+  // Estatísticas dos membros filtrados
+  const displayStats = {
+    total: filteredMembers.length,
+    baptized: filteredMembers.filter(m => m.dataBatismo).length,
+    pastor: filteredMembers.filter(m => m.funcaoMinisterial === 'Pastor').length,
+    presbitero: filteredMembers.filter(m => m.funcaoMinisterial === 'Presbítero').length,
+    diacono: filteredMembers.filter(m => m.funcaoMinisterial === 'Diácono').length,
+    obreiro: filteredMembers.filter(m => m.funcaoMinisterial === 'Obreiro').length,
+    missionario: filteredMembers.filter(m => m.funcaoMinisterial === 'Missionário').length,
+    evangelista: filteredMembers.filter(m => m.funcaoMinisterial === 'Evangelista').length
   };
 
   const handleDelete = async (id: string, name: string) => {
@@ -327,61 +358,96 @@ const Members = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Membros</CardTitle>
             <Users className="h-4 w-4 text-blue-100" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{memberStats.total}</div>
+            <div className="text-2xl font-bold">{displayStats.total}</div>
             <p className="text-xs text-blue-100">
-              membros cadastrados
+              membros encontrados
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className={`cursor-pointer transition-all hover:shadow-md ${funcaoFilter === 'Pastor' ? 'ring-2 ring-purple-500' : ''}`}
+          onClick={() => setFuncaoFilter(funcaoFilter === 'Pastor' ? 'todas' : 'Pastor')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Novos Este Mês</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium">Pastor</CardTitle>
+            <Users className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {memberStats.newThisMonth}
-            </div>
+            <div className="text-2xl font-bold text-purple-600">{displayStats.pastor}</div>
             <p className="text-xs text-muted-foreground">
-              novos membros
+              pastores {funcaoFilter === 'Pastor' && '(filtro ativo)'}
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className={`cursor-pointer transition-all hover:shadow-md ${funcaoFilter === 'Presbítero' ? 'ring-2 ring-blue-500' : ''}`}
+          onClick={() => setFuncaoFilter(funcaoFilter === 'Presbítero' ? 'todas' : 'Presbítero')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Membros Batizados</CardTitle>
+            <CardTitle className="text-sm font-medium">Presbítero</CardTitle>
             <UserCheck className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {memberStats.baptized}
-            </div>
+            <div className="text-2xl font-bold text-blue-600">{displayStats.presbitero}</div>
             <p className="text-xs text-muted-foreground">
-              batizados
+              presbíteros {funcaoFilter === 'Presbítero' && '(filtro ativo)'}
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className={`cursor-pointer transition-all hover:shadow-md ${funcaoFilter === 'Diácono' ? 'ring-2 ring-green-500' : ''}`}
+          onClick={() => setFuncaoFilter(funcaoFilter === 'Diácono' ? 'todas' : 'Diácono')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Obreiros</CardTitle>
-            <Calendar className="h-4 w-4 text-purple-600" />
+            <CardTitle className="text-sm font-medium">Diácono</CardTitle>
+            <Calendar className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">
-              {memberStats.byFunction['Obreiro'] || 0}
-            </div>
+            <div className="text-2xl font-bold text-green-600">{displayStats.diacono}</div>
             <p className="text-xs text-muted-foreground">
-              em ministério
+              diáconos {funcaoFilter === 'Diácono' && '(filtro ativo)'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card 
+          className={`cursor-pointer transition-all hover:shadow-md ${funcaoFilter === 'Obreiro' ? 'ring-2 ring-orange-500' : ''}`}
+          onClick={() => setFuncaoFilter(funcaoFilter === 'Obreiro' ? 'todas' : 'Obreiro')}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Obreiro</CardTitle>
+            <TrendingUp className="h-4 w-4 text-orange-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">{displayStats.obreiro}</div>
+            <p className="text-xs text-muted-foreground">
+              obreiros {funcaoFilter === 'Obreiro' && '(filtro ativo)'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card 
+          className={`cursor-pointer transition-all hover:shadow-md ${batismoFilter === 'batizados' ? 'ring-2 ring-cyan-500' : ''}`}
+          onClick={() => setBatismoFilter(batismoFilter === 'batizados' ? 'todos' : 'batizados')}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Batizados</CardTitle>
+            <UserCheck className="h-4 w-4 text-cyan-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-cyan-600">{displayStats.baptized}</div>
+            <p className="text-xs text-muted-foreground">
+              batizados {batismoFilter === 'batizados' && '(filtro ativo)'}
             </p>
           </CardContent>
         </Card>
@@ -436,17 +502,78 @@ const Members = () => {
         <TabsContent value="lista" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Buscar Membros</CardTitle>
+              <CardTitle>Buscar e Filtrar Membros</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nome, função, cidade ou telefone..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+              <div className="space-y-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por nome, função, cidade ou telefone..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                
+                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <Filter className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Filtrar por função:</span>
+                  </div>
+                  <Select value={funcaoFilter} onValueChange={setFuncaoFilter}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Todas as funções" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todas">Todas as funções</SelectItem>
+                      <SelectItem value="Pastor">Pastor</SelectItem>
+                      <SelectItem value="Presbítero">Presbítero</SelectItem>
+                      <SelectItem value="Diácono">Diácono</SelectItem>
+                      <SelectItem value="Obreiro">Obreiro</SelectItem>
+                      <SelectItem value="Missionário">Missionário</SelectItem>
+                      <SelectItem value="Evangelista">Evangelista</SelectItem>
+                      <SelectItem value="Membro">Membro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium">Status de batismo:</span>
+                  </div>
+                  <Select value={batismoFilter} onValueChange={setBatismoFilter}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Todos os status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos os status</SelectItem>
+                      <SelectItem value="batizados">Batizados</SelectItem>
+                      <SelectItem value="nao-batizados">Não batizados</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  {(searchQuery || funcaoFilter !== 'todas' || batismoFilter !== 'todos') && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSearchQuery('');
+                        setFuncaoFilter('todas');
+                        setBatismoFilter('todos');
+                      }}
+                    >
+                      Limpar filtros
+                    </Button>
+                  )}
+                </div>
+                
+                {filteredMembers.length > 0 && (
+                  <div className="text-sm text-muted-foreground">
+                    Mostrando {filteredMembers.length} membro(s)
+                    {funcaoFilter !== 'todas' && ` da função "${funcaoFilter}"`}
+                    {batismoFilter !== 'todos' && ` com status "${batismoFilter === 'batizados' ? 'batizados' : 'não batizados'}"`}
+                    {searchQuery && ` com o termo "${searchQuery}"`}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
