@@ -22,19 +22,34 @@ export const useN8nWebhook = () => {
     try {
       console.log('Enviando dados para n8n webhook:', webhookData);
       
+      const payload = {
+        ...webhookData,
+        timestamp: new Date().toISOString(),
+        source: 'secretaria-igreja-sistema',
+        version: '2.0'
+      };
+      
+      console.log('Payload sendo enviado:', JSON.stringify(payload, null, 2));
+      
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        mode: 'no-cors',
-        body: JSON.stringify({
-          ...webhookData,
-          timestamp: new Date().toISOString(),
-          source: 'secretaria-igreja-sistema',
-          version: '2.0'
-        })
+        body: JSON.stringify(payload)
       });
+      
+      console.log('Status da resposta:', response.status);
+      console.log('Headers da resposta:', response.headers);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Erro na resposta do webhook:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+      
+      const responseData = await response.text();
+      console.log('Resposta do webhook:', responseData);
 
       console.log('Dados enviados para webhook n8n com sucesso');
       return { success: true };
