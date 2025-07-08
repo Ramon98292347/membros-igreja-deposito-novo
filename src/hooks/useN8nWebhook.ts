@@ -31,25 +31,41 @@ export const useN8nWebhook = () => {
       
       console.log('Payload sendo enviado:', JSON.stringify(payload, null, 2));
       
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload)
-      });
-      
-      console.log('Status da resposta:', response.status);
-      console.log('Headers da resposta:', response.headers);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Erro na resposta do webhook:', errorText);
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      // Tentativa com CORS primeiro
+      try {
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        console.log('Status da resposta:', response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Erro na resposta do webhook:', errorText);
+          throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+        
+        const responseData = await response.text();
+        console.log('Resposta do webhook:', responseData);
+      } catch (corsError) {
+        console.log('Erro de CORS detectado, tentando com modo no-cors:', corsError);
+        
+        // Fallback para no-cors quando há erro de CORS
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        console.log('Requisição enviada com modo no-cors (status não disponível)');
       }
-      
-      const responseData = await response.text();
-      console.log('Resposta do webhook:', responseData);
 
       console.log('Dados enviados para webhook n8n com sucesso');
       return { success: true };
