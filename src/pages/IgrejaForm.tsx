@@ -42,45 +42,12 @@ const IgrejaForm = () => {
 
   const isEditing = !!id;
 
-  // Função para formatar data para o formato YYYY-MM-DD
-  const formatDateForInput = (dateString: string | null | undefined): string => {
-    if (!dateString) return '';
-    
-    // Se já está no formato correto (YYYY-MM-DD), retorna como está
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-      return dateString;
-    }
-    
-    // Tenta converter outros formatos para YYYY-MM-DD
-    try {
-      const date = new Date(dateString);
-      if (!isNaN(date.getTime())) {
-        return date.toISOString().split('T')[0];
-      }
-    } catch (error) {
-      console.warn('Erro ao formatar data:', dateString, error);
-    }
-    
-    return '';
-  };
-
   useEffect(() => {
     if (isEditing && id && igrejas.length > 0) {
       const igreja = igrejas.find(i => i.id === id);
       if (igreja) {
         console.log('Carregando dados da igreja para edição:', igreja);
-        
-        // Formatar as datas corretamente para os inputs
-        const formattedData = {
-          ...igreja,
-          data_nascimento_pastor: formatDateForInput(igreja.data_nascimento_pastor),
-          data_batismo_pastor: formatDateForInput(igreja.data_batismo_pastor),
-          data_assumiu_ipda: formatDateForInput(igreja.data_assumiu_ipda),
-          data_conclusao_cfo_pastor: formatDateForInput(igreja.data_conclusao_cfo_pastor)
-        };
-        
-        console.log('Dados formatados para o formulário:', formattedData);
-        setFormData(formattedData);
+        setFormData(igreja);
       } else {
         console.log('Igreja não encontrada com ID:', id);
         toast({
@@ -88,7 +55,7 @@ const IgrejaForm = () => {
           description: "Igreja não encontrada. Redirecionando...",
           variant: "destructive"
         });
-        navigate('/igrejas-sistema');
+        navigate('/igrejas');
       }
     }
   }, [id, isEditing, igrejas, navigate]);
@@ -117,7 +84,7 @@ const IgrejaForm = () => {
       } else {
         await addIgreja(formData as Omit<IgrejaData, 'id' | 'created_at' | 'updated_at'>);
       }
-      navigate('/igrejas-sistema');
+      navigate('/igrejas');
     } catch (error) {
       console.error('Erro ao salvar igreja:', error);
     } finally {
@@ -131,7 +98,7 @@ const IgrejaForm = () => {
       <div className="flex items-center gap-4">
         <Button 
           variant="outline" 
-          onClick={() => navigate('/igrejas-sistema')}
+          onClick={() => navigate('/igrejas')
           className="flex items-center gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -450,7 +417,7 @@ const IgrejaForm = () => {
           <Button 
             type="button" 
             variant="outline" 
-            onClick={() => navigate('/igrejas-sistema')}
+            onClick={() => navigate('/igrejas')}
           >
             Cancelar
           </Button>
