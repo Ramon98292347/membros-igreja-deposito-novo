@@ -26,14 +26,34 @@ const IgrejaForm = () => {
         return dateString;
       }
       
-      // Tenta converter outros formatos para YYYY-MM-DD
+      // Verifica se é formato brasileiro DD/MM/YYYY
+      const brDateMatch = dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (brDateMatch) {
+        const [, day, month, year] = brDateMatch;
+        const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        console.log(`Convertendo data brasileira ${dateString} para ${formattedDate}`);
+        return formattedDate;
+      }
+      
+      // Verifica se é formato ISO com hora (YYYY-MM-DDTHH:mm:ss)
+      if (dateString.includes('T')) {
+        const isoDate = dateString.split('T')[0];
+        if (/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) {
+          console.log(`Extraindo data de ISO: ${dateString} -> ${isoDate}`);
+          return isoDate;
+        }
+      }
+      
+      // Tenta converter outros formatos usando Date
       const date = new Date(dateString);
       if (isNaN(date.getTime())) {
         console.warn('Data inválida:', dateString);
         return '';
       }
       
-      return date.toISOString().split('T')[0];
+      const formatted = date.toISOString().split('T')[0];
+      console.log(`Convertendo data: ${dateString} -> ${formatted}`);
+      return formatted;
     } catch (error) {
       console.error('Erro ao formatar data:', dateString, error);
       return '';
