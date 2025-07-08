@@ -15,6 +15,30 @@ const IgrejaForm = () => {
   const { id } = useParams();
   const { igrejas, addIgreja, updateIgreja } = useSupabaseIgreja();
   const [loading, setLoading] = useState(false);
+
+  // Função para formatar datas para o formato YYYY-MM-DD esperado pelos inputs de data
+  const formatDateForInput = (dateString: string | null | undefined): string => {
+    if (!dateString) return '';
+    
+    try {
+      // Se já está no formato YYYY-MM-DD, retorna como está
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return dateString;
+      }
+      
+      // Tenta converter outros formatos para YYYY-MM-DD
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        console.warn('Data inválida:', dateString);
+        return '';
+      }
+      
+      return date.toISOString().split('T')[0];
+    } catch (error) {
+      console.error('Erro ao formatar data:', dateString, error);
+      return '';
+    }
+  };
   const [formData, setFormData] = useState<Partial<IgrejaData>>({
     nome_ipda: '',
     classificacao: 'local',
@@ -47,7 +71,18 @@ const IgrejaForm = () => {
       const igreja = igrejas.find(i => i.id === id);
       if (igreja) {
         console.log('Carregando dados da igreja para edição:', igreja);
-        setFormData(igreja);
+        
+        // Formatar as datas antes de definir no formData
+        const dadosFormatados = {
+          ...igreja,
+          data_nascimento_pastor: formatDateForInput(igreja.data_nascimento_pastor),
+          data_batismo_pastor: formatDateForInput(igreja.data_batismo_pastor),
+          data_assumiu_ipda: formatDateForInput(igreja.data_assumiu_ipda),
+          data_conclusao_cfo_pastor: formatDateForInput(igreja.data_conclusao_cfo_pastor)
+        };
+        
+        console.log('Dados formatados com datas:', dadosFormatados);
+        setFormData(dadosFormatados);
       } else {
         console.log('Igreja não encontrada com ID:', id);
         toast({
