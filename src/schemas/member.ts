@@ -21,7 +21,7 @@ export const memberSchema = z.object({
   nomeConjuge: z.string().optional(),
   funcaoMinisterial: z.string().optional(),
   dataBatismo: z.string().optional(),
-  dataOrdenacao: z.string().optional(),
+
   dataCasamento: z.string().optional(),
   igrejaBatismo: z.string().optional(),
   profissao: z.string().optional(),

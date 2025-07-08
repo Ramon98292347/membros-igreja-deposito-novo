@@ -256,14 +256,7 @@ const MemberRecord = () => {
                   </div>
                 </div>
 
-                <div>
-                  <div className="flex">
-                    <span className="font-semibold w-32">Data da Ordenação:</span>
-                    <span className="border-b border-dotted border-gray-400 flex-1 pl-2">
-                      {formatDate(member.dataOrdenacao || '')}
-                    </span>
-                  </div>
-                </div>
+
 
                 <div className="md:col-span-2">
                   <div className="flex">

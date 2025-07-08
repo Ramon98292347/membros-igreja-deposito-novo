@@ -40,7 +40,7 @@ const MemberForm = () => {
     profissao: '',
     temFilho: false,
     dataBatismo: '',
-    dataOrdenacao: '',
+
     funcaoMinisterial: 'Membro' as Member['funcaoMinisterial']
   });
 
@@ -72,7 +72,7 @@ const MemberForm = () => {
           profissao: member.profissao,
           temFilho: member.temFilho,
           dataBatismo: member.dataBatismo,
-          dataOrdenacao: member.dataOrdenacao || '',
+
           funcaoMinisterial: member.funcaoMinisterial
         });
       }
@@ -119,6 +119,28 @@ const MemberForm = () => {
           estado: cepData.uf
         }));
       }
+    }
+  };
+
+  const handleCPFChange = (cpf: string) => {
+    // Remove todos os caracteres não numéricos
+    const cleanCPF = cpf.replace(/\D/g, '');
+    
+    // Aplica a máscara do CPF
+    let formattedCPF = cleanCPF;
+    if (cleanCPF.length >= 4) {
+      formattedCPF = cleanCPF.slice(0, 3) + '.' + cleanCPF.slice(3);
+    }
+    if (cleanCPF.length >= 7) {
+      formattedCPF = cleanCPF.slice(0, 3) + '.' + cleanCPF.slice(3, 6) + '.' + cleanCPF.slice(6);
+    }
+    if (cleanCPF.length >= 10) {
+      formattedCPF = cleanCPF.slice(0, 3) + '.' + cleanCPF.slice(3, 6) + '.' + cleanCPF.slice(6, 9) + '-' + cleanCPF.slice(9, 11);
+    }
+    
+    // Limita a 11 dígitos
+    if (cleanCPF.length <= 11) {
+      handleInputChange('cpf', formattedCPF);
     }
   };
 
@@ -331,9 +353,10 @@ const MemberForm = () => {
                 <Input
                   id="cpf"
                   value={formData.cpf}
-                  onChange={(e) => handleInputChange('cpf', e.target.value)}
+                  onChange={(e) => handleCPFChange(e.target.value)}
                   placeholder="000.000.000-00"
                   className={errors.cpf ? 'border-red-500' : ''}
+                  maxLength={14}
                 />
                 {errors.cpf && <p className="text-sm text-red-500 mt-1">{errors.cpf}</p>}
               </div>
@@ -424,15 +447,7 @@ const MemberForm = () => {
                 {errors.dataBatismo && <p className="text-sm text-red-500 mt-1">{errors.dataBatismo}</p>}
               </div>
 
-              <div>
-                <Label htmlFor="dataOrdenacao">Data de Ordenação</Label>
-                <Input
-                  id="dataOrdenacao"
-                  type="date"
-                  value={formData.dataOrdenacao}
-                  onChange={(e) => handleInputChange('dataOrdenacao', e.target.value)}
-                />
-              </div>
+
 
               <div>
                 <Label htmlFor="funcaoMinisterial">Função Ministerial</Label>

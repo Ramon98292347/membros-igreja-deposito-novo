@@ -25,7 +25,6 @@ export interface Member {
   
   // Dados Ministeriais
   dataBatismo: string;
-  dataOrdenacao?: string;
   funcaoMinisterial: 'Membro' | 'Obreiro' | 'Diácono' | 'Presbítero' | 'Pastor' | 'Missionário' | 'Evangelista';
   
   // Documentos e fichas
