@@ -114,7 +114,8 @@ export const useSupabaseChurches = () => {
         temescola: churchData.temEscola,
         quantidadecriancas: churchData.quantidadeCriancas,
         diasfuncionamento: churchData.diasFuncionamento,
-        foto: churchData.imagem
+        foto: churchData.imagem,
+        dataatualizacao: new Date().toISOString()
       };
 
       const { data, error } = await supabase
@@ -161,6 +162,8 @@ export const useSupabaseChurches = () => {
       if (churchData.quantidadeCriancas !== undefined) supabaseData.quantidadecriancas = churchData.quantidadeCriancas;
       if (churchData.diasFuncionamento !== undefined) supabaseData.diasfuncionamento = churchData.diasFuncionamento;
       if (churchData.imagem !== undefined) supabaseData.foto = churchData.imagem;
+      
+      supabaseData.dataatualizacao = new Date().toISOString();
 
       const { data, error } = await supabase
         .from('churches')
