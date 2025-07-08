@@ -385,10 +385,9 @@ export type Database = {
           cidade_nascimento: string | null
           cpf: string | null
           dados_carteirinha: string | null
-          data_atualizacao: string
+          created_at: string | null
+          data_atualizacao: string | null
           data_batismo: string | null
-          data_cadastro: string
-          data_casamento: string | null
           data_nascimento: string
           data_ordenacao: string | null
           email: string | null
@@ -403,7 +402,6 @@ export type Database = {
           igreja_batismo: string | null
           link_ficha: string | null
           nome_completo: string
-          nome_conjuge: string | null
           numero_casa: string | null
           observacoes: string | null
           profissao: string | null
@@ -419,10 +417,9 @@ export type Database = {
           cidade_nascimento?: string | null
           cpf?: string | null
           dados_carteirinha?: string | null
-          data_atualizacao?: string
+          created_at?: string | null
+          data_atualizacao?: string | null
           data_batismo?: string | null
-          data_cadastro?: string
-          data_casamento?: string | null
           data_nascimento: string
           data_ordenacao?: string | null
           email?: string | null
@@ -437,7 +434,6 @@ export type Database = {
           igreja_batismo?: string | null
           link_ficha?: string | null
           nome_completo: string
-          nome_conjuge?: string | null
           numero_casa?: string | null
           observacoes?: string | null
           profissao?: string | null
@@ -453,10 +449,9 @@ export type Database = {
           cidade_nascimento?: string | null
           cpf?: string | null
           dados_carteirinha?: string | null
-          data_atualizacao?: string
+          created_at?: string | null
+          data_atualizacao?: string | null
           data_batismo?: string | null
-          data_cadastro?: string
-          data_casamento?: string | null
           data_nascimento?: string
           data_ordenacao?: string | null
           email?: string | null
@@ -471,7 +466,6 @@ export type Database = {
           igreja_batismo?: string | null
           link_ficha?: string | null
           nome_completo?: string
-          nome_conjuge?: string | null
           numero_casa?: string | null
           observacoes?: string | null
           profissao?: string | null

@@ -30,8 +30,8 @@ export interface SupabaseMember {
   dados_carteirinha?: string;
   ativo?: boolean;
   church_id?: string;
-  data_cadastro: string;
-  data_atualizacao: string;
+  created_at?: string;
+  data_atualizacao?: string;
 }
 
 export const useSupabaseMembers = () => {
@@ -67,8 +67,8 @@ export const useSupabaseMembers = () => {
       funcaoMinisterial: (supabaseMember.funcao_ministerial as any) || 'Membro',
       linkFicha: supabaseMember.link_ficha,
       dadosCarteirinha: supabaseMember.dados_carteirinha,
-      dataCadastro: supabaseMember.data_cadastro,
-      dataAtualizacao: supabaseMember.data_atualizacao
+      dataCadastro: supabaseMember.created_at || '',
+      dataAtualizacao: supabaseMember.data_atualizacao || ''
     };
   };
 
